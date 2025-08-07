@@ -290,13 +290,14 @@ export default function Home() {
       </div>
 
       {/* Right Sidebar - AI Features & Tools */}
-      <div className="hidden xl:flex xl:flex-col xl:w-80">
-        <RightSidebar 
-          roomId={roomId}
-          user={MOCK_USER}
-          currentRoom={currentRoom}
-        />
-      </div>
+      {roomId && (
+        <div className="hidden lg:flex lg:flex-col lg:w-80 xl:w-96 flex-shrink-0">
+          <RightSidebar 
+            roomId={roomId}
+            user={MOCK_USER}
+          />
+        </div>
+      )}
     </div>
   );
 }

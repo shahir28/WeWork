@@ -155,8 +155,8 @@ export default function FocusTimer({ userId, roomId }: FocusTimerProps) {
   };
 
   return (
-    <Card className="p-6">
-      <div className="flex items-center justify-between mb-4">
+    <Card className="p-4">
+      <div className="flex items-center justify-between mb-3">
         <div className="flex items-center space-x-2">
           <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Focus Timer</h3>
@@ -178,7 +178,7 @@ export default function FocusTimer({ userId, roomId }: FocusTimerProps) {
         </div>
       </div>
 
-      <div className="text-center mb-6">
+      <div className="text-center mb-4">
         <div className="text-4xl font-mono font-bold text-gray-900 dark:text-white mb-2" data-testid="text-timer-display">
           {formatTime(timeLeft)}
         </div>
@@ -188,7 +188,7 @@ export default function FocusTimer({ userId, roomId }: FocusTimerProps) {
         </p>
       </div>
 
-      <div className="flex items-center justify-center space-x-3 mb-6">
+      <div className="flex items-center justify-center space-x-2 mb-4">
         <Button 
           onClick={(e) => {
             e.preventDefault();
