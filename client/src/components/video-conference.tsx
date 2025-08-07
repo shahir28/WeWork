@@ -313,6 +313,9 @@ export default function VideoConference({ roomId, user, isConnected, socket }: V
             size="lg"
             variant="secondary"
             className="w-12 h-12 rounded-full"
+            onClick={() => {
+              alert('More options: Recording, Chat, Background Effects, and Advanced Settings coming soon!');
+            }}
             data-testid="button-more-options"
           >
             <MoreVertical className="w-5 h-5" />

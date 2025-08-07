@@ -70,7 +70,7 @@ export class WebRTCManager {
     }
   }
 
-  async createOffer(): Promise<RTCSessionDescription> {
+  async createOffer(): Promise<RTCSessionDescriptionInit> {
     if (!this.peerConnection) {
       throw new Error('Peer connection not initialized');
     }
@@ -80,13 +80,13 @@ export class WebRTCManager {
     
     this.sendSignal({
       type: 'offer',
-      offer: offer.toJSON()
+      offer: offer
     });
 
     return offer;
   }
 
-  async handleOffer(offer: RTCSessionDescription): Promise<RTCSessionDescription> {
+  async handleOffer(offer: RTCSessionDescriptionInit): Promise<RTCSessionDescriptionInit> {
     if (!this.peerConnection) {
       throw new Error('Peer connection not initialized');
     }
@@ -97,13 +97,13 @@ export class WebRTCManager {
     
     this.sendSignal({
       type: 'answer',
-      answer: answer.toJSON()
+      answer: answer
     });
 
     return answer;
   }
 
-  async handleAnswer(answer: RTCSessionDescription) {
+  async handleAnswer(answer: RTCSessionDescriptionInit) {
     if (!this.peerConnection) {
       throw new Error('Peer connection not initialized');
     }
