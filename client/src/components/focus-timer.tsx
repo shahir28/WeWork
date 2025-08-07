@@ -47,7 +47,7 @@ export default function FocusTimer({ userId, roomId }: FocusTimerProps) {
         duration: sessionDuration
       }),
     onSuccess: (response) => {
-      return response.json().then((session) => {
+      response.json().then((session) => {
         setCurrentSessionId(session.id);
         setIsRunning(true);
         queryClient.invalidateQueries({ queryKey: ['/api/focus/stats', userId] });
@@ -116,8 +116,10 @@ export default function FocusTimer({ userId, roomId }: FocusTimerProps) {
 
   const handleStartPause = () => {
     if (!isRunning && !currentSessionId) {
+      console.log('Starting new focus session...');
       startSessionMutation.mutate();
     } else {
+      console.log('Toggling pause/resume...');
       setIsRunning(!isRunning);
     }
   };
@@ -137,86 +139,29 @@ export default function FocusTimer({ userId, roomId }: FocusTimerProps) {
     setCurrentSessionId(null);
   };
 
-  const presetDurations = [15, 25, 45, 60]; // in minutes
+  const handleDurationChange = (newDuration: number) => {
+    if (!isRunning) {
+      setSessionDuration(newDuration);
+      setTimeLeft(newDuration * 60);
+    }
+  };
 
   return (
-    <div className="p-6">
-      <div className="flex items-center space-x-3 mb-6">
-        <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
-          <Clock className="text-white w-4 h-4" />
+    <Card className="p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center space-x-2">
+          <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Focus Timer</h3>
         </div>
-        <div>
-          <h3 className="font-semibold text-gray-900 dark:text-white" data-testid="text-focus-timer">Focus Timer</h3>
-          <p className="text-xs text-gray-500 dark:text-gray-400">Pomodoro technique</p>
-        </div>
-      </div>
-
-      {/* Timer Display */}
-      <Card className="p-6 mb-6 text-center">
-        <div className="mb-4">
-          <div className="text-4xl font-mono font-bold text-gray-900 dark:text-white mb-2" data-testid="text-timer-display">
-            {formatTime(timeLeft)}
-          </div>
-          <Progress 
-            value={getProgress()} 
-            className="w-full h-2 mb-2"
-            data-testid="progress-timer"
-          />
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            {isRunning ? 'Focus session in progress' : timeLeft === 0 ? 'Session completed!' : 'Ready to start'}
-          </p>
-        </div>
-
-        {/* Timer Controls */}
-        <div className="flex items-center justify-center space-x-3">
-          <Button
-            size="lg"
-            onClick={handleStartPause}
-            disabled={startSessionMutation.isPending}
-            className="w-12 h-12 rounded-full"
-            data-testid="button-start-pause-timer"
-          >
-            {isRunning ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-          </Button>
-          
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={handleStop}
-            className="w-12 h-12 rounded-full"
-            data-testid="button-stop-timer"
-          >
-            <Square className="w-5 h-5" />
-          </Button>
-          
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={handleReset}
-            className="w-12 h-12 rounded-full"
-            data-testid="button-reset-timer"
-          >
-            <RotateCcw className="w-5 h-5" />
-          </Button>
-        </div>
-      </Card>
-
-      {/* Duration Presets */}
-      <div className="mb-6">
-        <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Session Duration</p>
-        <div className="grid grid-cols-2 gap-2">
-          {presetDurations.map((duration) => (
+        <div className="flex items-center space-x-1">
+          {[15, 25, 45, 60].map((duration) => (
             <Button
               key={duration}
               variant={sessionDuration === duration ? "default" : "outline"}
               size="sm"
-              onClick={() => {
-                if (!isRunning) {
-                  setSessionDuration(duration);
-                  setTimeLeft(duration * 60);
-                }
-              }}
+              onClick={() => handleDurationChange(duration)}
               disabled={isRunning}
+              className="px-2 py-1 text-xs"
               data-testid={`button-duration-${duration}`}
             >
               {duration}m
@@ -225,52 +170,94 @@ export default function FocusTimer({ userId, roomId }: FocusTimerProps) {
         </div>
       </div>
 
-      {/* Focus Stats */}
-      <div className="space-y-3">
-        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Today's Progress</p>
-        
-        <div className="grid grid-cols-2 gap-3">
-          <Card className="p-3 text-center">
-            <div className="flex items-center justify-center mb-2">
-              <Target className="w-4 h-4 text-green-500 mr-1" />
-            </div>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white" data-testid="text-total-sessions">
-              {focusStats.totalSessions}
-            </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Sessions</p>
-          </Card>
-          
-          <Card className="p-3 text-center">
-            <div className="flex items-center justify-center mb-2">
-              <Award className="w-4 h-4 text-blue-500 mr-1" />
-            </div>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white" data-testid="text-total-duration">
-              {formatDuration(focusStats.totalDuration)}
-            </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Total Time</p>
-          </Card>
+      <div className="text-center mb-6">
+        <div className="text-4xl font-mono font-bold text-gray-900 dark:text-white mb-2" data-testid="text-timer-display">
+          {formatTime(timeLeft)}
         </div>
-
-        {focusStats.totalSessions > 0 && (
-          <Card className="p-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-900 dark:text-white">Focus Quality</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Based on completion rate</p>
-              </div>
-              <div className="text-right">
-                <p className="text-lg font-bold text-green-600 dark:text-green-400">
-                  {Math.round(focusStats.averageQuality * 100)}%
-                </p>
-              </div>
-            </div>
-            <Progress 
-              value={focusStats.averageQuality * 100} 
-              className="w-full h-2 mt-2"
-            />
-          </Card>
-        )}
+        <Progress value={getProgress()} className="h-2 mb-4" />
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          {isRunning ? 'Focus session in progress' : 'Ready to focus'}
+        </p>
       </div>
-    </div>
+
+      <div className="flex items-center justify-center space-x-3 mb-6">
+        <Button 
+          onClick={handleStartPause}
+          size="lg"
+          disabled={startSessionMutation.isPending}
+          className={`px-6 ${isRunning ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-green-600 hover:bg-green-700'}`}
+          data-testid="button-timer-start-pause"
+        >
+          {startSessionMutation.isPending ? (
+            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          ) : isRunning ? (
+            <>
+              <Pause className="w-5 h-5 mr-2" />
+              Pause
+            </>
+          ) : (
+            <>
+              <Play className="w-5 h-5 mr-2" />
+              Start
+            </>
+          )}
+        </Button>
+
+        <Button 
+          onClick={handleStop}
+          variant="outline"
+          size="lg"
+          disabled={!isRunning && !currentSessionId}
+          data-testid="button-timer-stop"
+        >
+          <Square className="w-5 h-5 mr-2" />
+          Stop
+        </Button>
+
+        <Button 
+          onClick={handleReset}
+          variant="ghost"
+          size="lg"
+          disabled={isRunning}
+          data-testid="button-timer-reset"
+        >
+          <RotateCcw className="w-5 h-5 mr-2" />
+          Reset
+        </Button>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="text-center">
+          <div className="flex items-center justify-center mb-1">
+            <Target className="w-4 h-4 text-green-600 dark:text-green-400 mr-1" />
+            <span className="text-xs text-gray-500 dark:text-gray-400">Sessions</span>
+          </div>
+          <div className="text-lg font-semibold text-gray-900 dark:text-white" data-testid="text-sessions-count">
+            {focusStats.totalSessions}
+          </div>
+        </div>
+        
+        <div className="text-center">
+          <div className="flex items-center justify-center mb-1">
+            <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400 mr-1" />
+            <span className="text-xs text-gray-500 dark:text-gray-400">Time</span>
+          </div>
+          <div className="text-lg font-semibold text-gray-900 dark:text-white" data-testid="text-total-time">
+            {formatDuration(focusStats.totalDuration)}
+          </div>
+        </div>
+        
+        <div className="text-center">
+          <div className="flex items-center justify-center mb-1">
+            <Award className="w-4 h-4 text-purple-600 dark:text-purple-400 mr-1" />
+            <span className="text-xs text-gray-500 dark:text-gray-400">Quality</span>
+          </div>
+          <div className="text-lg font-semibold text-gray-900 dark:text-white" data-testid="text-quality-score">
+            {focusStats.averageQuality > 0 ? `${Math.round(focusStats.averageQuality * 100)}%` : '--'}
+          </div>
+        </div>
+      </div>
+    </Card>
   );
 }
