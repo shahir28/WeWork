@@ -141,7 +141,7 @@ export default function RightSidebar({ roomId, user, currentRoom }: RightSidebar
   }, [volume, audioElements]);
 
   return (
-    <div className="bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 h-full flex flex-col">
+    <div className="bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 h-full flex flex-col overflow-hidden w-full">
       
       {/* AI Assistant Header */}
       <div className="p-6 border-b border-gray-200 dark:border-gray-700">
@@ -164,9 +164,11 @@ export default function RightSidebar({ roomId, user, currentRoom }: RightSidebar
       )}
 
       {/* AI Meeting Notes */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto min-h-0">
         {roomId ? (
-          <AINotesComponent roomId={roomId} userId={user.id} />
+          <div className="p-4">
+            <AINotesComponent roomId={roomId} userId={user.id} />
+          </div>
         ) : (
           <div className="p-6 text-center">
             <Brain className="w-12 h-12 mx-auto text-gray-400 mb-3" />
@@ -178,8 +180,8 @@ export default function RightSidebar({ roomId, user, currentRoom }: RightSidebar
       </div>
 
       {/* Ambient Sound Controls */}
-      <div className="p-6 border-t border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-between mb-4">
+      <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between mb-3">
           <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">Ambient Sounds</h4>
           <div className="flex items-center space-x-2">
             <Volume2 className="w-4 h-4 text-gray-500" />
@@ -196,7 +198,7 @@ export default function RightSidebar({ roomId, user, currentRoom }: RightSidebar
           </div>
         </div>
         
-        <div className="space-y-3">
+        <div className="space-y-2">
           {ambientSounds.map((sound) => {
             const isPlaying = currentlyPlaying === sound.id;
             const isRecommended = suggestedSound?.suggestedSound === sound.id;
@@ -205,7 +207,7 @@ export default function RightSidebar({ roomId, user, currentRoom }: RightSidebar
             return (
               <Card
                 key={sound.id}
-                className={`p-3 cursor-pointer transition-colors ${
+                className={`p-2 cursor-pointer transition-colors ${
                   isPlaying 
                     ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' 
                     : 'hover:bg-gray-50 dark:hover:bg-gray-800'
