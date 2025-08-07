@@ -47,31 +47,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
             break;
 
           case 'join-room':
-            if (connection.userId) {
-              connection.roomId = data.roomId;
-              await storage.joinRoom({
-                roomId: data.roomId!,
-                userId: connection.userId
-              });
-              
-              // Notify others in room
-              broadcastToRoom(data.roomId!, {
-                type: 'user-joined',
-                data: { userId: connection.userId }
-              }, connectionId);
-            }
+            connection.userId = data.userId;
+            connection.roomId = data.roomId;
+            
+            await storage.joinRoom({
+              roomId: data.roomId!,
+              userId: data.userId!
+            });
+            
+            // Get updated participant count
+            const participants = await storage.getRoomParticipants(data.roomId!);
+            
+            // Notify all connected clients about room update
+            wss.clients.forEach((client) => {
+              if (client.readyState === WebSocket.OPEN) {
+                client.send(JSON.stringify({
+                  type: 'room-updated',
+                  roomId: data.roomId,
+                  participantCount: participants.length
+                }));
+              }
+            });
+            
+            console.log(`User ${data.userId} joined room ${data.roomId} (${participants.length} total)`);
             break;
 
           case 'leave-room':
-            if (connection.userId && connection.roomId) {
-              await storage.leaveRoom(connection.roomId, connection.userId);
+            if (data.userId && data.roomId) {
+              await storage.leaveRoom(data.roomId, data.userId);
               
-              // Notify others in room
-              broadcastToRoom(connection.roomId, {
-                type: 'user-left',
-                data: { userId: connection.userId }
-              }, connectionId);
+              // Get updated participant count
+              const participants = await storage.getRoomParticipants(data.roomId);
               
+              // Notify all connected clients about room update
+              wss.clients.forEach((client) => {
+                if (client.readyState === WebSocket.OPEN) {
+                  client.send(JSON.stringify({
+                    type: 'room-updated',
+                    roomId: data.roomId,
+                    participantCount: participants.length
+                  }));
+                }
+              });
+              
+              console.log(`User ${data.userId} left room ${data.roomId} (${participants.length} remaining)`);
               connection.roomId = undefined;
             }
             break;
@@ -221,7 +240,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const participants = await storage.getRoomParticipants(room.id);
-      res.json({ ...room, participants });
+      res.json({ ...room, participants, participantCount: participants.length });
     } catch (error) {
       res.status(500).json({ message: 'Failed to fetch room' });
     }

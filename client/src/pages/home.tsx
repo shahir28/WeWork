@@ -26,6 +26,7 @@ export default function Home() {
   const [, params] = useRoute("/room/:roomId");
   const roomId = params?.roomId || null;
   const [currentRoom, setCurrentRoom] = useState<any>(null);
+  const [participantCount, setParticipantCount] = useState<number>(0);
   const [showMobileNav, setShowMobileNav] = useState<'rooms' | 'video' | 'ai' | 'settings'>('video');
   const isMobile = useIsMobile();
   
@@ -48,8 +49,50 @@ export default function Home() {
   useEffect(() => {
     if (room) {
       setCurrentRoom(room);
+      setParticipantCount(room.participantCount || 0);
+      
+      // Join the room when we have a valid roomId and socket connection
+      if (roomId && socket && isConnected) {
+        socket.send(JSON.stringify({
+          type: 'join-room',
+          roomId: roomId,
+          userId: MOCK_USER.id
+        }));
+      }
     }
-  }, [room]);
+  }, [room, roomId, socket, isConnected]);
+
+  // Listen for room updates via WebSocket
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleMessage = (event: MessageEvent) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'room-updated' && data.roomId === roomId) {
+          setParticipantCount(data.participantCount);
+        }
+      } catch (error) {
+        console.error('Failed to parse WebSocket message:', error);
+      }
+    };
+
+    socket.addEventListener('message', handleMessage);
+    return () => socket.removeEventListener('message', handleMessage);
+  }, [socket, roomId]);
+
+  // Handle leaving room when component unmounts or room changes
+  useEffect(() => {
+    return () => {
+      if (socket && roomId) {
+        socket.send(JSON.stringify({
+          type: 'leave-room',
+          roomId: roomId,
+          userId: MOCK_USER.id
+        }));
+      }
+    };
+  }, [socket, roomId]);
 
   // Mobile bottom navigation
   const MobileBottomNav = () => (
@@ -177,7 +220,7 @@ export default function Home() {
                   {currentRoom?.name || "Select a Room"}
                 </h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400" data-testid="text-room-info">
-                  {currentRoom ? `${currentRoom.type} Room • ${currentRoom.participantCount || 0} members online` : "Choose a room to start collaborating"}
+                  {currentRoom ? `${currentRoom.type} Room • ${participantCount} members online` : "Choose a room to start collaborating"}
                 </p>
               </div>
               {currentRoom && (
