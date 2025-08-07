@@ -2,7 +2,7 @@
 
 A comprehensive virtual workspace platform that combines video conferencing, focus management, and AI-powered meeting assistance. Create and join virtual rooms for different purposes, participate in video/audio calls, track productivity with focus timers, and receive AI-generated meeting summaries.
 
-<img width="1920" height="1080" alt="Screenshot (234)" src="https://github.com/user-attachments/assets/16cabdaa-d17c-464a-be6d-5e1e01dc452a" />
+<img width="1920" height="853" alt="Screenshot (234)" src="https://github.com/user-attachments/assets/143ac975-6af8-4045-886a-14aa3889c64a" />
 
 
 ## Features
