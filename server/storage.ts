@@ -42,6 +42,17 @@ export class MemStorage implements IStorage {
   private meetingNotes: Map<string, MeetingNotes> = new Map();
 
   constructor() {
+    // Create the mock user
+    this.createUser({
+      name: "Alex Johnson",
+      username: "alex.johnson",
+      password: "password",
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"
+    }).then(user => {
+      // Store the user with a predictable ID for the demo
+      this.users.set("user-1", { ...user, id: "user-1" });
+    });
+
     // Create some default public rooms
     this.createRoom({
       name: "Coffee Chat",

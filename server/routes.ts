@@ -50,6 +50,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
             connection.userId = data.userId;
             connection.roomId = data.roomId;
             
+            // First leave any existing room for this user
+            if (connection.userId) {
+              const allParticipants = await getAllParticipants();
+              for (const [roomId, participants] of allParticipants) {
+                if (participants.some(p => p.userId === connection.userId)) {
+                  await storage.leaveRoom(roomId, connection.userId);
+                }
+              }
+            }
+            
+            // Join the new room
             await storage.joinRoom({
               roomId: data.roomId!,
               userId: data.userId!
@@ -338,6 +349,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: 'Failed to suggest ambient sound' });
     }
   });
+
+  // Helper function to get all participants across rooms
+  async function getAllParticipants() {
+    const allRooms = await storage.getPublicRooms();
+    const roomParticipants = new Map();
+    
+    for (const room of allRooms) {
+      const participants = await storage.getRoomParticipants(room.id);
+      roomParticipants.set(room.id, participants);
+    }
+    
+    return roomParticipants;
+  }
 
   return httpServer;
 }
