@@ -40,18 +40,25 @@ export default function FocusTimer({ userId, roomId }: FocusTimerProps) {
 
   // Start focus session mutation
   const startSessionMutation = useMutation({
-    mutationFn: () => 
-      apiRequest("POST", "/api/focus", { 
+    mutationFn: () => {
+      console.log('Mutation function called with:', { userId, roomId, duration: sessionDuration });
+      return apiRequest("POST", "/api/focus", { 
         userId,
         roomId,
         duration: sessionDuration
-      }),
+      });
+    },
     onSuccess: (response) => {
+      console.log('Mutation success:', response);
       response.json().then((session) => {
+        console.log('Session created:', session);
         setCurrentSessionId(session.id);
         setIsRunning(true);
         queryClient.invalidateQueries({ queryKey: ['/api/focus/stats', userId] });
       });
+    },
+    onError: (error) => {
+      console.error('Mutation error:', error);
     }
   });
 
@@ -115,8 +122,9 @@ export default function FocusTimer({ userId, roomId }: FocusTimerProps) {
   };
 
   const handleStartPause = () => {
+    console.log('handleStartPause called!', { isRunning, currentSessionId, userId, roomId });
     if (!isRunning && !currentSessionId) {
-      console.log('Starting new focus session...');
+      console.log('Starting new focus session...', { userId, roomId, sessionDuration });
       startSessionMutation.mutate();
     } else {
       console.log('Toggling pause/resume...');
@@ -182,7 +190,12 @@ export default function FocusTimer({ userId, roomId }: FocusTimerProps) {
 
       <div className="flex items-center justify-center space-x-3 mb-6">
         <Button 
-          onClick={handleStartPause}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Button clicked!');
+            handleStartPause();
+          }}
           size="lg"
           disabled={startSessionMutation.isPending}
           className={`px-6 ${isRunning ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-green-600 hover:bg-green-700'}`}
