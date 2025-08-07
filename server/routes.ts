@@ -292,12 +292,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Start focus session
+  // Focus session endpoints
+  app.post('/api/focus', async (req, res) => {
+    try {
+      console.log('Creating focus session:', req.body);
+      const session = await storage.createFocusSession(req.body);
+      res.status(201).json(session);
+    } catch (error) {
+      console.error('Failed to create focus session:', error);
+      res.status(400).json({ message: 'Failed to start focus session' });
+    }
+  });
+
   app.post('/api/focus-sessions', async (req, res) => {
     try {
       const session = await storage.createFocusSession(req.body);
       res.status(201).json(session);
     } catch (error) {
       res.status(400).json({ message: 'Failed to start focus session' });
+    }
+  });
+
+  // Update/complete focus session
+  app.patch('/api/focus/:sessionId', async (req, res) => {
+    try {
+      console.log('Updating focus session:', req.params.sessionId, req.body);
+      const { isCompleted, actualDuration } = req.body;
+      
+      if (isCompleted) {
+        const session = await storage.endFocusSession(req.params.sessionId, actualDuration || 0, 0.8);
+        
+        if (!session) {
+          return res.status(404).json({ message: 'Session not found' });
+        }
+
+        // Generate AI insight
+        const room = await storage.getRoom(session.roomId);
+        const insight = await generateFocusInsight(
+          actualDuration || 0,
+          room?.type || 'focus',
+          new Date().getHours()
+        );
+        
+        res.json({ session, insight });
+      } else {
+        res.json({ message: 'Session updated' });
+      }
+    } catch (error) {
+      console.error('Failed to update focus session:', error);
+      res.status(500).json({ message: 'Failed to update focus session' });
     }
   });
 
@@ -326,6 +369,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get user focus stats
+  // Focus stats endpoints
+  app.get('/api/focus/stats/:userId', async (req, res) => {
+    try {
+      console.log('Getting focus stats for user:', req.params.userId);
+      const stats = await storage.getUserFocusStats(req.params.userId);
+      res.json(stats);
+    } catch (error) {
+      console.error('Failed to fetch focus stats:', error);
+      res.status(500).json({ message: 'Failed to fetch focus stats' });
+    }
+  });
+
   app.get('/api/users/:userId/focus-stats', async (req, res) => {
     try {
       const stats = await storage.getUserFocusStats(req.params.userId);
