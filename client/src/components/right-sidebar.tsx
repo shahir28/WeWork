@@ -166,7 +166,7 @@ export default function RightSidebar({ roomId, user, currentRoom }: RightSidebar
       {/* AI Meeting Notes */}
       <div className="flex-1 overflow-y-auto">
         {roomId ? (
-          <AINotesComponent roomId={roomId} />
+          <AINotesComponent roomId={roomId} userId={user.id} />
         ) : (
           <div className="p-6 text-center">
             <Brain className="w-12 h-12 mx-auto text-gray-400 mb-3" />
