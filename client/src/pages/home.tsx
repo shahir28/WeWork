@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import Sidebar from "@/components/sidebar";
 import VideoConference from "@/components/video-conference";
 import RightSidebar from "@/components/right-sidebar";
+import SettingsPanel from "@/components/settings-panel";
 import { useSocket } from "@/hooks/use-socket";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -28,6 +29,7 @@ export default function Home() {
   const [currentRoom, setCurrentRoom] = useState<any>(null);
   const [participantCount, setParticipantCount] = useState<number>(0);
   const [showMobileNav, setShowMobileNav] = useState<'rooms' | 'video' | 'ai' | 'settings'>('video');
+  const [showSettings, setShowSettings] = useState(false);
   const isMobile = useIsMobile();
   
   const { socket, isConnected } = useSocket();
@@ -274,6 +276,16 @@ export default function Home() {
                     <Users className="w-4 h-4 mr-2" />
                     Invite
                   </Button>
+
+                  <Button 
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowSettings(true)}
+                    data-testid="button-settings"
+                  >
+                    <Settings className="w-4 h-4 mr-2" />
+                    Settings
+                  </Button>
                 </>
               )}
             </div>
@@ -297,6 +309,14 @@ export default function Home() {
             user={MOCK_USER}
           />
         </div>
+      )}
+
+      {/* Settings Panel */}
+      {showSettings && (
+        <SettingsPanel 
+          user={MOCK_USER}
+          onClose={() => setShowSettings(false)}
+        />
       )}
     </div>
   );
