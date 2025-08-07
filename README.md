@@ -2,7 +2,7 @@
 
 A comprehensive virtual workspace platform that combines video conferencing, focus management, and AI-powered meeting assistance. Create and join virtual rooms for different purposes, participate in video/audio calls, track productivity with focus timers, and receive AI-generated meeting summaries.
 
-![Virtual Workspace Platform](./screenshots/app-preview.png)
+
 
 ## Features
 
