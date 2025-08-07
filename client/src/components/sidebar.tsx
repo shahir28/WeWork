@@ -105,7 +105,14 @@ export default function Sidebar({ user, publicRooms, userRooms, currentRoom, onR
           </div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">CoWork</h1>
         </div>
-        <Button variant="ghost" size="icon" data-testid="button-settings">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={() => {
+            alert('Settings panel coming soon! This will include theme toggle, notification preferences, and account settings.');
+          }}
+          data-testid="button-settings"
+        >
           <Settings className="w-4 h-4" />
         </Button>
       </div>

@@ -206,6 +206,11 @@ export default function Home() {
                     variant="outline" 
                     size="sm"
                     className="text-purple-600 border-purple-200 hover:bg-purple-50 dark:text-purple-400 dark:border-purple-800 dark:hover:bg-purple-900/20"
+                    onClick={() => {
+                      // Scroll to AI Notes section or show AI panel
+                      const aiSection = document.querySelector('[data-testid="text-ai-assistant"]');
+                      aiSection?.scrollIntoView({ behavior: 'smooth' });
+                    }}
                     data-testid="button-ai-notes"
                   >
                     <Brain className="w-4 h-4 mr-2" />
@@ -213,7 +218,16 @@ export default function Home() {
                     <div className="w-2 h-2 bg-purple-500 rounded-full ml-2"></div>
                   </Button>
 
-                  <Button size="sm" data-testid="button-invite">
+                  <Button 
+                    size="sm" 
+                    onClick={() => {
+                      const roomUrl = `${window.location.origin}/room/${roomId}`;
+                      navigator.clipboard.writeText(roomUrl).then(() => {
+                        alert('Room link copied to clipboard!');
+                      });
+                    }}
+                    data-testid="button-invite"
+                  >
                     <Users className="w-4 h-4 mr-2" />
                     Invite
                   </Button>
